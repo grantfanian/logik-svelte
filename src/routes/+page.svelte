@@ -1,2 +1,14 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
+<script lang="ts">
+	import Logik from './logik.svelte';
+</script>
+
+<div id="content" style="display:flex;justify-content:center;align-items:center;">
+	<div id="app" style="display:block;"><Logik /></div>
+</div>
+
+<style lang="scss">
+	:global(body) {
+		background-color: #252522;
+		color: #eee;
+	}
+</style>
