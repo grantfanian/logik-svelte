@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { Game } from '$lib/logik';
-	import { json } from '@sveltejs/kit';
 	import Dot from './dot.svelte';
 	let game = new Game(); //new Game([3, 1, 2, 0]);
 	// game.newRow();
@@ -57,9 +56,9 @@
 				<div class="count">{+rowindex + 1}.</div>
 				<div class="rating">
 					{#each row.rating as ratedot}
-						<!-- <div class="dot rating--dot"> -->
-						<Dot class="dot rating--dot" color={[null, '#fff', '#e55'][ratedot]} />
-						<!-- </div> -->
+						<div class="dot rating--dot">
+							<Dot color={[null, '#fff', '#e55'][ratedot]} />
+						</div>
 					{/each}
 				</div>
 				<div class="guess">
@@ -96,6 +95,7 @@
 					>
 						Try it!
 					</button>
+					<!-- {@debug game} -->
 				{/if}
 			</li>
 		{/each}
@@ -156,10 +156,10 @@
 				class="tryagain btn active"
 				on:click={() => {
 					game = new Game();
-					game.newRow();
 					game = game;
 				}}>Try again!</button
 			>
+			<!-- {@debug game} -->
 		</li>
 	{/if}
 </ol>
@@ -248,7 +248,7 @@
 	.rating {
 		$size: 2em;
 		width: $size * 2 + 0.5 * 2;
-		:global(.rating--dot) {
+		.rating--dot {
 			width: $size;
 			height: $size;
 		}

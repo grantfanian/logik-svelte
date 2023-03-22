@@ -1,21 +1,11 @@
 export class GameRow {
-	private sequence: number[];
+	sequence: number[];
 
 	guessed: number[] = Array(4).fill(null);
 	rating: number[] = Array(4).fill(null);
 	win = false;
 
 	constructor(sequence: number[]) {
-		/*
-	// define a fake-const sequence field on the instance
-	Object.defineProperty(this, 'sequence', {
-		value: sequence,
-		writable: false,
-		enumerable: true,
-		configurable: true
-	});
-	// simplified away 
-	*/
 		this.sequence = sequence;
 	}
 
@@ -23,52 +13,44 @@ export class GameRow {
 		this.guessed[pos] = guess;
 	}
 
-	/* rate() {
-	let result: number[] = [];
-
-	// calm down it's here
-	console.log(this.sequence, this.guessed);
-
-	// order depends on order on guessed, this may be unjust
-	for (const [i, c] of this.guessed.entries()) {
-		let rating = [0,0];
-		for (const [index, color] of this.sequence.entries()) {
-			if (c == color) {
-				rating = [index,1];
-				if (i == index) {
-					rating = [index,2];
-					break;
-				}
-			}
-		}
-		console.log(rating);
-
-		result[rating[0]] = result[rating[0]] > rating[1] ? result[rating[0]] : rating[1];
-		console.log(result);
-	}
-	result = result.filter((v) => v != 0);
-	this.rating = result.fill(0, result.length, 4);
-	this.win = this.checkWin(this.rating);
-}
-*/
 	rate() {
 		const result: number[][] = [];
-		// const Object* result while created Object is modifiable :)
+		// const Object* result, created Object is mutable :)
+
+		const counts = this.sequence.reduce(
+			(cnt: { [key: number]: number }, cur) => ((cnt[cur] = cnt[cur] + 1 || 1), cnt),
+			{}
+		);
+		console.log(counts);
 
 		for (const [i, c] of this.guessed.entries()) {
 			for (const [index, color] of this.sequence.entries()) {
 				if (c == color) {
-					if ((result[c] ?? [null, 0])[1] < 1) {
-						result[c] = [i, 1];
+					if (!result[c]) {
+						result[c] = [];
 					}
-					if (i == index) {
-						result[c] = [i, 2];
-						break;
+					if (result[c].length < counts[c]) {
+						result[c][i] = 1;
+						// eslint-disable-next-line no-debugger
+						debugger;
+						if (i == index) {
+							result[c][i] = 2;
+							break;
+						}
 					}
 				}
 			}
 		}
 		console.log(result);
+		const res = result
+			.reduce((a, v) => {
+				v.forEach((e, i) => e && (a[i] = e));
+				return a;
+			}, [])
+			.filter((v) => v != null);
+		res.push(...Array(4 - res.length).fill(null));
+		console.log(res);
+		/* console.log(result);
 		let res = Object.entries(result)
 			.map((kv) => [+kv[0], kv[1]])
 			//@ts-expect-error pointless generic `number | number[]`: it can't be `number`
@@ -84,7 +66,7 @@ export class GameRow {
 
 		//@ts-expect-error pointless generic `number | number[]`: it can't be `number`
 		this.rating = res;
-		this.win = this.checkWin(this.rating);
+		this.win = this.checkWin(this.rating); */
 	}
 	checkWin = (rating: number[]) => rating.filter((v) => v == 2).length == 4;
 	// less obscure than reduce-sum without losing performance with len 4
@@ -122,11 +104,11 @@ export class Game {
 
 	guess(color: number) {
 		// TODO: dispatch errors on wrong inputs
-		if (this.bootstrap) {
+		if (this.bootstrap /* && !this.sequence.includes(color) */) {
 			this.sequence[this.currentField] = color;
 			console.log(this.currentField, color);
 			this.setCurrent(4);
-		} else {
+		} else if (!this.bootstrap /*  && !this.rows[this.rows.length - 1].guessed.includes(color) */) {
 			this.rows[this.rows.length - 1].guess(this.currentField, color);
 			console.log(this.currentField, color);
 			this.setCurrent(4);
@@ -134,7 +116,7 @@ export class Game {
 	}
 
 	isGuessed(field: number[]): boolean {
-		return [...Array(4).keys()].every((v) => !!field[v]);
+		return [...Array(4).keys()].every((v) => !!field[v] || field[v] === 0);
 	}
 
 	submit() {
@@ -146,9 +128,11 @@ export class Game {
 			this.rows[this.rows.length - 1].rate();
 			this.win ||= this.rows[this.rows.length - 1].win;
 			if (!this.win) {
-				this.lose ||= !(this.rows.length < 16);
-				this.newRow();
-				this.currentField = 0;
+				this.lose ||= !(this.rows.length < 15);
+				if (!this.lose) {
+					this.newRow();
+					this.currentField = 0;
+				}
 			}
 		}
 	}
