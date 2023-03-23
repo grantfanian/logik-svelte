@@ -25,23 +25,35 @@ export class GameRow {
 
 		for (const [i, c] of this.guessed.entries()) {
 			for (const [index, color] of this.sequence.entries()) {
+				// debugger;
 				if (c == color) {
 					if (!result[c]) {
 						result[c] = [];
 					}
-					if (result[c].length < counts[c]) {
+					console.log(
+						c,
+						result[c].filter((v) => !!(v + 1)).length,
+						result[c].reduce((a, v) => a + (v + 1 ? 1 : 0), 0)
+					);
+					if (result[c].filter((v) => !!(v + 1)).length < counts[c]) {
 						result[c][i] = 1;
-						// eslint-disable-next-line no-debugger
-						debugger;
+						// // eslint-disable-next-line no-debugger
+						// debugger;
+						console.log(result, i, index);
 						if (i == index) {
 							result[c][i] = 2;
 							break;
+						}
+					} else if (i == index) {
+						const firstone = result[c].indexOf(1);
+						if (firstone >= 0) {
+							result[c][firstone] = 2;
 						}
 					}
 				}
 			}
 		}
-		console.log(result);
+		console.log('result', result);
 		const res = result
 			.reduce((a, v) => {
 				v.forEach((e, i) => e && (a[i] = e));
@@ -50,26 +62,8 @@ export class GameRow {
 			.filter((v) => v != null);
 		res.push(...Array(4 - res.length).fill(null));
 		console.log(res);
-		/* console.log(result);
-		let res = Object.entries(result)
-			.map((kv) => [+kv[0], kv[1]])
-			//@ts-expect-error pointless generic `number | number[]`: it can't be `number`
-			.sort((a, b) => a[1][0] - b[1][0]);
-
-		console.log(res);
-
-		//@ts-expect-error pointless generic `number | number[]`: it can't be `number`
-		res = res.map((v) => v[1][1]);
-		res.push(...Array(4 - res.length).fill(null));
-
-		console.log(res);
-
-		//@ts-expect-error pointless generic `number | number[]`: it can't be `number`
 		this.rating = res;
-		this.win = this.checkWin(this.rating); */
 	}
-	checkWin = (rating: number[]) => rating.filter((v) => v == 2).length == 4;
-	// less obscure than reduce-sum without losing performance with len 4
 }
 
 export class Game {
@@ -78,7 +72,7 @@ export class Game {
 	rows: GameRow[] = [];
 	win = false;
 	lose = false;
-	bootstrap = true; // alternative to these funny bool states exists?
+	bootstrap = true; // is there an alternative to these funny state bools?
 
 	COLORS = ['#5e5', '#55e', '#e55', '#e5d', '#555', '#ee5'];
 
@@ -103,30 +97,29 @@ export class Game {
 	}
 
 	guess(color: number) {
-		// TODO: dispatch errors on wrong inputs
-		if (this.bootstrap /* && !this.sequence.includes(color) */) {
+		if (this.bootstrap) {
 			this.sequence[this.currentField] = color;
 			console.log(this.currentField, color);
 			this.setCurrent(4);
-		} else if (!this.bootstrap /*  && !this.rows[this.rows.length - 1].guessed.includes(color) */) {
+		} else if (!this.bootstrap) {
 			this.rows[this.rows.length - 1].guess(this.currentField, color);
 			console.log(this.currentField, color);
 			this.setCurrent(4);
 		}
 	}
 
-	isGuessed(field: number[]): boolean {
-		return [...Array(4).keys()].every((v) => !!field[v] || field[v] === 0);
-	}
-
+	isGuessed = (f: number[]) =>
+		f != null ? [...Array(4).keys()].every((v) => !!f[v] || f[v] === 0) : false;
+	checkWin = (rating: number[]) => rating.reduce((a, v) => a + v) == 8;
 	submit() {
+		// TODO: dispatch event for a field error
 		if (this.bootstrap) {
 			this.currentField = 0;
 			this.newRow();
 			this.bootstrap = false;
 		} else {
 			this.rows[this.rows.length - 1].rate();
-			this.win ||= this.rows[this.rows.length - 1].win;
+			this.win ||= this.checkWin(this.rows[this.rows.length - 1].rating);
 			if (!this.win) {
 				this.lose ||= !(this.rows.length < 15);
 				if (!this.lose) {

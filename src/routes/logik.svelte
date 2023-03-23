@@ -1,11 +1,8 @@
 <script lang="ts">
 	import { Game } from '$lib/logik';
 	import Dot from './dot.svelte';
-	let game = new Game(); //new Game([3, 1, 2, 0]);
-	// game.newRow();
-	$: {
-		console.log(game.rows[game.rows.length - 2]);
-	}
+	let game = new Game();
+
 	const handleKeyboard = (e: KeyboardEvent) => {
 		if (e.code == 'Backspace') {
 			if (!game.bootstrap) {
@@ -19,8 +16,6 @@
 		} else if (!e.repeat) {
 			let clr = 'ASDFGH'.indexOf(e.code.slice(3)[0]);
 			if (clr >= 0) {
-				// game.guess(clr);
-				// game.rows[game.rows.length - 1] = game.rows[game.rows.length - 1];
 				document.querySelectorAll<HTMLElement>('.input--dot')[clr]?.click();
 			} else {
 				switch (e.code) {
@@ -38,7 +33,12 @@
 						break;
 					}
 					case 'Enter': {
-						document.querySelector<HTMLElement>('.submit.btn')?.click();
+						let e = document.querySelector<HTMLElement>('.submit.btn');
+						if (e) {
+							if (window.getComputedStyle(e).visibility == 'visible') {
+								e.click();
+							}
+						}
 						break;
 					}
 				}
@@ -57,12 +57,11 @@
 				<div class="rating">
 					{#each row.rating as ratedot}
 						<div class="dot rating--dot">
-							<Dot color={[null, '#fff', '#e55'][ratedot]} />
+							<Dot color={[null, '#000', '#fff'][ratedot]} />
 						</div>
 					{/each}
 				</div>
 				<div class="guess">
-					<!-- {@debug row} -->
 					{#each Object.entries(row.guessed) as [i, guessdot]}
 						{#if +rowindex == game.rows.length - 1}
 							<button
@@ -95,11 +94,11 @@
 					>
 						Try it!
 					</button>
-					<!-- {@debug game} -->
 				{/if}
 			</li>
 		{/each}
 	{:else}
+		<li class="gamecaption">Type a color sequence (keys A..H)</li>
 		<li class="gamerow">
 			<div class="guess">
 				{#each Object.entries(game.sequence) as [i, seqdot]}
@@ -159,7 +158,6 @@
 					game = game;
 				}}>Try again!</button
 			>
-			<!-- {@debug game} -->
 		</li>
 	{/if}
 </ol>
@@ -170,14 +168,15 @@
 	button {
 		all: unset;
 	}
+
 	button {
 		display: block;
 	}
-
 	.game {
 		font-size: 1rem;
 		font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
 			Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+
 		overflow-y: auto;
 	}
 
@@ -186,25 +185,28 @@
 		width: 2em;
 		font-size: 2em;
 		position: relative;
-		// transform: translateX(100%);
 		align-items: center;
 	}
+
 	.count-left {
 		display: block;
 		visibility: hidden;
 
 		font-size: 1.5em;
 		text-align: right;
+
 		small {
 			font-size: 1rem;
 		}
 	}
+
 	.congratulations {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		font-size: 4em;
 	}
+
 	.rating,
 	.guess,
 	.input {
@@ -213,15 +215,23 @@
 		gap: 0.5em;
 	}
 
+	.gamecaption {
+		margin-top: 2em;
+		display: block;
+		font-size: 2em;
+	}
+
 	.gamerow {
 		display: flex;
 		flex-wrap: wrap;
 		margin-top: 1em;
 		gap: 1em;
+
 		.dot {
 			display: inline-block;
 			border-radius: 50%;
 		}
+
 		&:nth-last-child(2) {
 			margin-top: 7em;
 
@@ -239,7 +249,7 @@
 				&.selected-dot {
 					position: relative;
 					z-index: 0;
-					box-shadow: 0 0 1em 0.75em #ee5;
+					box-shadow: 0 0 1em 1em #ee5;
 				}
 			}
 		}
@@ -248,6 +258,7 @@
 	.rating {
 		$size: 2em;
 		width: $size * 2 + 0.5 * 2;
+
 		.rating--dot {
 			width: $size;
 			height: $size;
@@ -259,27 +270,33 @@
 
 		$size: 4em;
 		height: $size;
+		margin-bottom: 2em;
 		.input--dot {
 			width: $size;
 			height: $size;
 		}
 	}
+
 	.guess {
 		$size: 4em;
 		height: $size;
+
 		.guess--dot {
 			width: $size;
 			height: $size;
 		}
 	}
+
 	.active {
 		cursor: pointer;
 	}
+
 	.btn {
 		padding: 0.25rem 1rem 0.5rem 1rem;
 		background-color: #33a;
 		border-radius: 0.5rem;
 	}
+
 	.submit {
 		visibility: hidden;
 		font-size: 2em;
@@ -291,10 +308,12 @@
 		animation-fill-mode: forwards;
 		animation-name: show;
 	}
+
 	@keyframes show {
 		from {
 			opacity: 0;
 		}
+
 		to {
 			opacity: 1;
 			visibility: visible;
