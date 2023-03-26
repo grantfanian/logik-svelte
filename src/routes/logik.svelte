@@ -14,17 +14,17 @@
 			}
 			game.currentField = game.currentField > 0 ? game.currentField - 1 : 0;
 		} else if (!e.repeat) {
-			let clr = 'ASDFGH'.indexOf(e.code.slice(3)[0]);
+			const clr = 'ASDFGH'.indexOf(e.code.slice(3)[0]);
 			if (clr >= 0) {
 				document.querySelectorAll<HTMLElement>('.input--dot')[clr]?.click();
 			} else {
 				switch (e.code) {
 					case 'ArrowLeft': {
-						game.currentField = game.currentField > 0 ? game.currentField - 1 : 0;
+						game.currentField = game.currentField > 0 ? game.currentField - 1 : 3;
 						break;
 					}
 					case 'ArrowRight': {
-						game.currentField = game.currentField < 3 ? game.currentField + 1 : game.currentField;
+						game.currentField = game.currentField < 3 ? game.currentField + 1 : 0;
 						break;
 					}
 					case 'Escape': {
@@ -33,12 +33,8 @@
 						break;
 					}
 					case 'Enter': {
-						let e = document.querySelector<HTMLElement>('.submit.btn');
-						if (e) {
-							if (window.getComputedStyle(e).visibility == 'visible') {
-								e.click();
-							}
-						}
+						const e = document.querySelector<HTMLElement>('.submit.btn');
+						e && window.getComputedStyle(e).visibility == 'visible' && e.click();
 						break;
 					}
 				}
@@ -52,12 +48,11 @@
 <ol type="1" class="game">
 	{#if !game.bootstrap}
 		{#each Object.entries(game.rows) as [rowindex, row]}
-			<li class="gamerow">
-				<div class="count">{+rowindex + 1}.</div>
+			<li class="gamerow" data-number={+rowindex + 1}>
 				<div class="rating">
 					{#each row.rating as ratedot}
 						<div class="dot rating--dot">
-							<Dot color={[null, '#000', '#fff'][ratedot]} />
+							<Dot color={[null, '#e00', '#dff'][ratedot]} />
 						</div>
 					{/each}
 				</div>
@@ -89,7 +84,7 @@
 							game.rows[game.rows.length - 2] = game.rows[game.rows.length - 2];
 							game.win = game.win;
 							game.lose = game.lose;
-							game.bootstrap = game.bootstrap;
+							window.scrollTo(0, document.body.scrollHeight);
 						}}
 					>
 						Try it!
@@ -98,8 +93,8 @@
 			</li>
 		{/each}
 	{:else}
-		<li class="gamecaption">Type a color sequence (keys A..H)</li>
-		<li class="gamerow">
+		<li class="gamecaption">Type a color sequence<br />(keys A..H)</li>
+		<li class="gamerow" data-bootstrap>
 			<div class="guess">
 				{#each Object.entries(game.sequence) as [i, seqdot]}
 					<button
@@ -121,6 +116,7 @@
 					game.submit();
 					game.bootstrap = game.bootstrap;
 					game.rows = game.rows;
+					window.scrollTo(0, document.body.scrollHeight);
 				}}
 			>
 				Let's go!
@@ -129,24 +125,28 @@
 	{/if}
 	{#if !(game.win || game.lose) || game.bootstrap}
 		<li class="input">
+			<div class="input--btns">
+				{#each Object.entries(game.COLORS) as [i, c]}
+					<button
+						class="dot input--dot active"
+						on:click={() => {
+							game.guess(+i);
+							if (game.rows[game.rows.length - 1]) {
+								game.rows[game.rows.length - 1] = game.rows[game.rows.length - 1];
+							} else {
+								game.sequence = game.sequence;
+							}
+						}}
+					>
+						<Dot color={c} />
+					</button>
+				{/each}
+			</div>
+
+			<div class="break" />
 			<div class="count-left {game.bootstrap ? '' : 'anim-visibility'}">
 				{16 - game.rows.length}<br /><small>guesses left</small>
 			</div>
-			{#each Object.entries(game.COLORS) as [i, c]}
-				<button
-					class="dot input--dot active"
-					on:click={() => {
-						game.guess(+i);
-						if (game.rows[game.rows.length - 1]) {
-							game.rows[game.rows.length - 1] = game.rows[game.rows.length - 1];
-						} else {
-							game.sequence = game.sequence;
-						}
-					}}
-				>
-					<Dot color={c} />
-				</button>
-			{/each}
 		</li>
 	{:else}
 		<li class="congratulations {game.win ? 'win' : 'lose'} anim-visibility">
@@ -156,7 +156,7 @@
 				on:click={() => {
 					game = new Game();
 					game = game;
-				}}>Try again!</button
+				}}>Try again</button
 			>
 		</li>
 	{/if}
@@ -168,35 +168,41 @@
 	button {
 		all: unset;
 	}
-
 	button {
 		display: block;
 	}
+	.break {
+		flex-basis: 100%;
+	}
+
 	.game {
 		font-size: 1rem;
 		font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
 			Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-
-		overflow-y: auto;
+		display: flex;
+		align-items: flex-start;
+		flex-direction: column;
 	}
 
-	.count {
+	/* .count {
 		display: flex;
 		width: 2em;
 		font-size: 2em;
 		position: relative;
 		align-items: center;
-	}
+	} */
 
 	.count-left {
 		display: block;
-		visibility: hidden;
+		transition: visibility 0.5s;
+		visibility: hidden; // initial
+		margin-top: 0.25em;
 
 		font-size: 1.5em;
 		text-align: right;
 
 		small {
-			font-size: 1rem;
+			font-size: 0.75em;
 		}
 	}
 
@@ -204,12 +210,13 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
+		align-self: center;
 		font-size: 4em;
 	}
 
 	.rating,
 	.guess,
-	.input {
+	.input--btns {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.5em;
@@ -224,6 +231,7 @@
 	.gamerow {
 		display: flex;
 		flex-wrap: wrap;
+		align-items: center;
 		margin-top: 1em;
 		gap: 1em;
 
@@ -249,31 +257,45 @@
 				&.selected-dot {
 					position: relative;
 					z-index: 0;
-					box-shadow: 0 0 1em 1em #ee5;
+					box-shadow: 0 0 3em 1em #ee5;
 				}
 			}
 		}
+	}
+	.gamerow:not([data-bootstrap])::before {
+		content: attr(data-number) '.';
+		font-size: inherit;
+		width: 2em;
 	}
 
 	.rating {
 		$size: 2em;
 		width: $size * 2 + 0.5 * 2;
+		transition: transform 0.1s;
 
 		.rating--dot {
 			width: $size;
 			height: $size;
 		}
 	}
+	.game > * {
+		overflow-anchor: none;
+	}
 
 	.input {
 		margin-top: 2em;
-
+		overflow-anchor: auto;
+		align-self: flex-end;
 		$size: 4em;
 		height: $size;
 		margin-bottom: 2em;
-		.input--dot {
-			width: $size;
+		.input--btns {
+			display: flex;
 			height: $size;
+			.input--dot {
+				width: $size;
+				height: $size;
+			}
 		}
 	}
 
@@ -281,7 +303,8 @@
 		$size: 4em;
 		height: $size;
 
-		.guess--dot {
+		.dot.guess--dot {
+			border: 1px solid #222;
 			width: $size;
 			height: $size;
 		}
@@ -299,24 +322,13 @@
 
 	.submit {
 		visibility: hidden;
+		opacity: 0;
+		transition: opacity 0.5s ease;
 		font-size: 2em;
 	}
 
 	.anim-visibility {
-		animation-duration: 0.5s;
-		animation-timing-function: linear;
-		animation-fill-mode: forwards;
-		animation-name: show;
-	}
-
-	@keyframes show {
-		from {
-			opacity: 0;
-		}
-
-		to {
-			opacity: 1;
-			visibility: visible;
-		}
+		visibility: visible;
+		opacity: 1;
 	}
 </style>

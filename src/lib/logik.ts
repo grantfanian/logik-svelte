@@ -21,7 +21,6 @@ export class GameRow {
 			(cnt: { [key: number]: number }, cur) => ((cnt[cur] = cnt[cur] + 1 || 1), cnt),
 			{}
 		);
-		console.log(counts);
 
 		for (const [i, c] of this.guessed.entries()) {
 			for (const [index, color] of this.sequence.entries()) {
@@ -30,38 +29,47 @@ export class GameRow {
 					if (!result[c]) {
 						result[c] = [];
 					}
-					console.log(
-						c,
-						result[c].filter((v) => !!(v + 1)).length,
-						result[c].reduce((a, v) => a + (v + 1 ? 1 : 0), 0)
-					);
-					if (result[c].filter((v) => !!(v + 1)).length < counts[c]) {
+					// reduce-count of the actual non-empty array fields
+					if (result[c].reduce((a, v) => a + ~~(!!v || v === 0), 0) < counts[c]) {
 						result[c][i] = 1;
-						// // eslint-disable-next-line no-debugger
-						// debugger;
-						console.log(result, i, index);
 						if (i == index) {
 							result[c][i] = 2;
 							break;
 						}
 					} else if (i == index) {
-						const firstone = result[c].indexOf(1);
-						if (firstone >= 0) {
-							result[c][firstone] = 2;
+						// this may be unwanted
+						const last1 = result[c].lastIndexOf(1);
+						if (last1 >= 0) {
+							//@ts-expect-error inner for this function so `number` is not guaranteed
+							result[c][last1] = undefined;
+							result[c][i] = 2;
 						}
 					}
 				}
 			}
 		}
-		console.log('result', result);
+
+		/*
+		seq:		0,		0,	1,	2
+		guess:		2,		1,	1,	2
+		
+		(score values 1 for red/black, 2 for white)
+
+		result:	1:	 , (1=>2),	 ,	 
+				2:	 ,		 ,	 ,	2
+		
+		res:		2,		2,	 ,	 
+		*/
+
 		const res = result
+			// merge the per-color rating arrays
 			.reduce((a, v) => {
 				v.forEach((e, i) => e && (a[i] = e));
 				return a;
 			}, [])
-			.filter((v) => v != null);
+			.filter((v) => !!v); // compact the result - `!!` for not returning a `number`
+
 		res.push(...Array(4 - res.length).fill(null));
-		console.log(res);
 		this.rating = res;
 	}
 }
@@ -82,14 +90,15 @@ export class Game {
 		} else {
 			this.bootstrap = true;
 		}
-		console.log(this);
 	}
 
 	setCurrent(pos: number) {
-		// ain't got no operator overloading
+		/* when `pos` > 3, move `currentField` to the next position */
 		if (pos > 3) {
 			if (this.currentField < 3) {
 				this.currentField++;
+			} else {
+				this.currentField = 0;
 			}
 		} else {
 			this.currentField = pos;
@@ -97,22 +106,22 @@ export class Game {
 	}
 
 	guess(color: number) {
+		console.log(`guess field ${this.currentField} as ${color}`);
 		if (this.bootstrap) {
 			this.sequence[this.currentField] = color;
-			console.log(this.currentField, color);
 			this.setCurrent(4);
 		} else if (!this.bootstrap) {
 			this.rows[this.rows.length - 1].guess(this.currentField, color);
-			console.log(this.currentField, color);
 			this.setCurrent(4);
 		}
 	}
 
 	isGuessed = (f: number[]) =>
 		f != null ? [...Array(4).keys()].every((v) => !!f[v] || f[v] === 0) : false;
+
 	checkWin = (rating: number[]) => rating.reduce((a, v) => a + v) == 8;
+
 	submit() {
-		// TODO: dispatch event for a field error
 		if (this.bootstrap) {
 			this.currentField = 0;
 			this.newRow();
