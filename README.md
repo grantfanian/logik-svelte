@@ -21,3 +21,9 @@ or for development:
 ```shell
 $ npm run dev
 ```
+
+## missing features / TODO
+- IMPORTANT feature: initialize the game with random values
+- controls: the player may guess the controls, yet placing a guide somewhere would be very nice
+- animations: UI will feel more natural with more animations
+- layout: cleaner layout, consistent between game states

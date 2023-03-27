@@ -28,7 +28,11 @@
 						break;
 					}
 					case 'Escape': {
-						game.rows[game.rows.length - 1].guessed = Array(4).fill(null);
+						if (game.rows[game.rows.length - 1]) {
+							game.rows[game.rows.length - 1].guessed = Array(4).fill(null);
+						} else {
+							game.sequence = Array(4).fill(null);
+						}
 						game.currentField = 0;
 						break;
 					}
@@ -38,6 +42,9 @@
 							e.click();
 						}
 						break;
+					}
+					case 'KeyP': {
+						game = new Game();
 					}
 				}
 			}
