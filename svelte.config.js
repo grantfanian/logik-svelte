@@ -12,9 +12,9 @@ const config = {
 		adapter: adapter({
 			pages: 'build',
 			assets: 'build',
-			fallback: 'nojs.html',
+			fallback: "index.html",
 			precompress: false,
-			strict: true
+			strict: false
 		})
 	}
 };

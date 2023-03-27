@@ -259,7 +259,8 @@
 	}
 	.count-left {
 		display: block;
-		transition: visibility 0.5s;
+		opacity: 0;
+		transition: opacity 0.5s;
 		visibility: hidden; // initial
 		margin-top: 0.25em;
 

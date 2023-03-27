@@ -106,12 +106,14 @@ export class Game {
 	}
 
 	guess(color: number) {
-		console.log(`guess field ${this.currentField} as ${color}`);
+		console.log(`guess #${this.currentField}: ${color}`);
 		if (this.bootstrap) {
+			console.log('@sequence');
 			this.sequence[this.currentField] = color;
 			this.setCurrent(4);
 		} else if (!this.bootstrap) {
 			this.rows[this.rows.length - 1].guess(this.currentField, color);
+			console.log(`@${this.rows.length - 1}`);
 			this.setCurrent(4);
 		}
 	}
