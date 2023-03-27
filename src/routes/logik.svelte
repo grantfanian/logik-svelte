@@ -173,9 +173,6 @@
 	button {
 		display: block;
 	}
-	.break {
-		flex-basis: 100%;
-	}
 
 	.game {
 		font-size: 1rem;
@@ -185,43 +182,8 @@
 		align-items: flex-start;
 		flex-direction: column;
 	}
-
-	/* .count {
-		display: flex;
-		width: 2em;
-		font-size: 2em;
-		position: relative;
-		align-items: center;
-	} */
-
-	.count-left {
-		display: block;
-		transition: visibility 0.5s;
-		visibility: hidden; // initial
-		margin-top: 0.25em;
-
-		font-size: 1.5em;
-		text-align: right;
-
-		small {
-			font-size: 0.75em;
-		}
-	}
-
-	.congratulations {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		align-self: center;
-		font-size: 4em;
-	}
-
-	.rating,
-	.guess,
-	.input--btns {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.5em;
+	.game > * {
+		overflow-anchor: none;
 	}
 
 	.gamecaption {
@@ -264,12 +226,20 @@
 			}
 		}
 	}
+
 	.gamerow:not([data-bootstrap])::before {
 		content: attr(data-number) '.';
 		font-size: inherit;
 		width: 2em;
 	}
 
+	.rating,
+	.guess,
+	.input--btns {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5em;
+	}
 	.rating {
 		$size: 2em;
 		width: $size * 2 + 0.5 * 2;
@@ -280,10 +250,29 @@
 			height: $size;
 		}
 	}
-	.game > * {
-		overflow-anchor: none;
-	}
+	.count-left {
+		display: block;
+		transition: visibility 0.5s;
+		visibility: hidden; // initial
+		margin-top: 0.25em;
 
+		font-size: 1.5em;
+		text-align: right;
+
+		small {
+			font-size: 0.75em;
+		}
+	}
+	.guess {
+		$size: 4em;
+		height: $size;
+
+		.dot.guess--dot {
+			border: 1px solid #222;
+			width: $size;
+			height: $size;
+		}
+	}
 	.input {
 		margin-top: 2em;
 		overflow-anchor: auto;
@@ -300,22 +289,13 @@
 			}
 		}
 	}
-
-	.guess {
-		$size: 4em;
-		height: $size;
-
-		.dot.guess--dot {
-			border: 1px solid #222;
-			width: $size;
-			height: $size;
-		}
+	.congratulations {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		align-self: center;
+		font-size: 4em;
 	}
-
-	.active {
-		cursor: pointer;
-	}
-
 	.btn {
 		padding: 0.25rem 1rem 0.5rem 1rem;
 		background-color: #33a;
@@ -332,5 +312,11 @@
 	.anim-visibility {
 		visibility: visible;
 		opacity: 1;
+	}
+	.active {
+		cursor: pointer;
+	}
+	.break {
+		flex-basis: 100%;
 	}
 </style>
