@@ -34,7 +34,9 @@
 					}
 					case 'Enter': {
 						const e = document.querySelector<HTMLElement>('.submit.btn');
-						e && window.getComputedStyle(e).visibility == 'visible' && e.click();
+						if (e && window.getComputedStyle(e).visibility == 'visible') {
+							e.click();
+						}
 						break;
 					}
 				}

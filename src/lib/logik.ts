@@ -55,7 +55,7 @@ export class GameRow {
 		
 		(score values 1 for red/black, 2 for white)
 
-		result:	1:	 , (1=>2),	 ,	 
+		result:	1:	 , (1->2),	 ,	 
 				2:	 ,		 ,	 ,	2
 		
 		res:		2,		2,	 ,	 
@@ -67,7 +67,7 @@ export class GameRow {
 				v.forEach((e, i) => e && (a[i] = e));
 				return a;
 			}, [])
-			.filter((v) => !!v); // compact the result - `!!` for not returning a `number`
+			.filter((v) => !!v); // compact the result - `!!` so closure returns a `boolean`, not the whole `number`
 
 		res.push(...Array(4 - res.length).fill(null));
 		this.rating = res;
@@ -119,7 +119,7 @@ export class Game {
 	isGuessed = (f: number[]) =>
 		f != null ? [...Array(4).keys()].every((v) => !!f[v] || f[v] === 0) : false;
 
-	checkWin = (rating: number[]) => rating.reduce((a, v) => a + v) == 8;
+	checkWin = (rating: number[]) => rating.reduce((a, v) => a + v, 0) == 8;
 
 	submit() {
 		if (this.bootstrap) {
