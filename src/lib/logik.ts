@@ -50,15 +50,15 @@ export class GameRow {
 		}
 
 		/*
-		seq:		0,		0,	1,	2
+		sequence:	0,		0,	1,	2
 		guess:		2,		1,	1,	2
 		
 		(score values 1 for red/black, 2 for white)
 
-		result:	1:	 , (1->2),	 ,	 
-				2:	 ,		 ,	 ,	2
+		result:	1:	-, (1->2),	-,	-
+				2:	-,		-,	-,	2
 		
-		res:		2,		2,	 ,	 
+		res:		2,		2,	-,	-
 		*/
 
 		const res = result
